@@ -1,0 +1,31 @@
+{
+  "name": "tribal-authentica",
+  "version": "0.0.1",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "packages/hardhat",
+      "packages/nextjs"
+    ]
+  },
+  "scripts": {
+    "chain": "yarn workspace @tribal-authentica/hardhat chain",
+    "fork": "yarn workspace @tribal-authentica/hardhat fork",
+    "deploy": "yarn workspace @tribal-authentica/hardhat deploy",
+    "compile": "yarn workspace @tribal-authentica/hardhat compile",
+    "start": "yarn workspace @tribal-authentica/nextjs dev",
+    "next:dev": "yarn workspace @tribal-authentica/nextjs dev",
+    "next:build": "yarn workspace @tribal-authentica/nextjs build",
+    "next:start": "yarn workspace @tribal-authentica/nextjs start",
+    "postinstall": "husky install",
+    "precommit": "lint-staged"
+  },
+  "packageManager": "yarn@4.1.0",
+  "devDependencies": {
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  }
+}

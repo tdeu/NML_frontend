@@ -1,0 +1,18 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "yarn vercel-build",
+  "installCommand": "yarn install",
+  "devCommand": "yarn dev",
+  "outputDirectory": ".next",
+  "regions": ["cdg1"],
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
+  "routes": [
+    { "src": "/blockexplorer", "dest": "/packages/nextjs/app/blockexplorer/page.tsx" },
+    { "src": "/blockexplorer/address/(?<address>[^/]+)", "dest": "/packages/nextjs/app/blockexplorer/address/[address]/page.tsx" },
+    { "src": "/blockexplorer/transaction/(?<txHash>[^/]+)", "dest": "/packages/nextjs/app/blockexplorer/transaction/[txHash]/page.tsx" }
+  ]
+}
