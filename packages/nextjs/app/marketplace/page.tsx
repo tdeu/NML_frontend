@@ -3,15 +3,20 @@
 import React, { useState } from 'react';
 import { useAccount } from 'wagmi';
 import { Address } from "~~/components/scaffold-eth";
+import { 
+  ShoppingBagIcon,
+  MagnifyingGlassIcon,
+  PlusCircleIcon,
+  CurrencyDollarIcon
+} from "@heroicons/react/24/outline";
 
-// Mock data for masks (replace with actual data fetching logic later)
 const mockMasks = [
-  { id: 1, name: "Yoruba Mask", tribe: "Yoruba", price: "0.5 ETH", image: "/placeholder-mask-1.jpg" },
-  { id: 2, name: "Dogon Mask", tribe: "Dogon", price: "0.7 ETH", image: "/placeholder-mask-2.jpg" },
-  { id: 3, name: "Senufo Mask", tribe: "Senufo", price: "0.6 ETH", image: "/placeholder-mask-3.jpg" },
-  { id: 4, name: "Bamana Mask", tribe: "Bamana", price: "0.8 ETH", image: "/placeholder-mask-4.jpg" },
-  { id: 5, name: "Fang Mask", tribe: "Fang", price: "1.0 ETH", image: "/placeholder-mask-5.jpg" },
-  { id: 6, name: "Chokwe Mask", tribe: "Chokwe", price: "0.9 ETH", image: "/placeholder-mask-6.jpg" },
+  { id: 1, name: "Yoruba Mask", tribe: "Yoruba", price: "0.5 ETH", image: "/api/placeholder/400/300" },
+  { id: 2, name: "Dogon Mask", tribe: "Dogon", price: "0.7 ETH", image: "/api/placeholder/400/300" },
+  { id: 3, name: "Senufo Mask", tribe: "Senufo", price: "0.6 ETH", image: "/api/placeholder/400/300" },
+  { id: 4, name: "Bamana Mask", tribe: "Bamana", price: "0.8 ETH", image: "/api/placeholder/400/300" },
+  { id: 5, name: "Fang Mask", tribe: "Fang", price: "1.0 ETH", image: "/api/placeholder/400/300" },
+  { id: 6, name: "Chokwe Mask", tribe: "Chokwe", price: "0.9 ETH", image: "/api/placeholder/400/300" },
 ];
 
 export default function MaskMarketplace() {
@@ -20,7 +25,6 @@ export default function MaskMarketplace() {
   const [selectedTribe, setSelectedTribe] = useState('');
   const [sortBy, setSortBy] = useState('');
 
-  // Filter and sort masks based on user input
   const filteredMasks = mockMasks.filter(mask => 
     mask.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
     (selectedTribe === '' || mask.tribe === selectedTribe)
@@ -31,70 +35,111 @@ export default function MaskMarketplace() {
   });
 
   return (
-    <div className="container mx-auto p-4">
-      <header className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Mask Marketplace</h1>
-        <div className="flex items-center">
-          Connected: <Address address={connectedAddress} />
-        </div>
-      </header>
+    <div className="flex flex-col min-h-screen">
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-green-600/10"></div>
+        <main className="relative flex-grow container mx-auto px-4 py-8">
+          {/* Hero Section */}
+          <section className="text-center mb-12 pt-8">
+            <h1 className="text-5xl font-['Grenze_Gotisch'] mb-6 bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent">
+              Mask Marketplace
+            </h1>
+            <p className="text-xl mb-8 text-base-content/80">
+              Discover and collect authentic African masks
+            </p>
+            <div className="flex justify-end items-center text-sm text-base-content/60">
+              Connected: <Address address={connectedAddress} />
+            </div>
+          </section>
 
-      <div className="mb-8">
-        <input
-          type="text"
-          placeholder="Search masks..."
-          className="input input-bordered w-full max-w-xs mb-4"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <div className="flex space-x-4">
-          <select
-            className="select select-bordered"
-            value={selectedTribe}
-            onChange={(e) => setSelectedTribe(e.target.value)}
-          >
-            <option value="">All Tribes</option>
-            <option value="Yoruba">Yoruba</option>
-            <option value="Dogon">Dogon</option>
-            <option value="Senufo">Senufo</option>
-            <option value="Bamana">Bamana</option>
-            <option value="Fang">Fang</option>
-            <option value="Chokwe">Chokwe</option>
-          </select>
-          <select
-            className="select select-bordered"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-          >
-            <option value="">Sort by</option>
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredMasks.map(mask => (
-          <div key={mask.id} className="card bg-base-100 shadow-xl">
-            <figure><img src={mask.image} alt={mask.name} /></figure>
-            <div className="card-body">
-              <h2 className="card-title">{mask.name}</h2>
-              <p>Tribe: {mask.tribe}</p>
-              <p>Price: {mask.price}</p>
-              <div className="card-actions justify-end">
-                <button className="btn btn-primary">Buy Now</button>
+          {/* Search and Filter Section */}
+          <section className="mb-12">
+            <div className="bg-gradient-to-br from-emerald-500/10 to-green-600/10 rounded-2xl p-8 backdrop-blur border border-emerald-500/20">
+              <div className="flex items-center justify-center mb-6">
+                <MagnifyingGlassIcon className="w-12 h-12 text-emerald-500" />
+              </div>
+              <div className="space-y-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search masks..."
+                    className="w-full p-4 rounded-lg bg-white/80 border border-emerald-500/20 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <select
+                    className="w-full p-4 rounded-lg bg-white/80 border border-emerald-500/20 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    value={selectedTribe}
+                    onChange={(e) => setSelectedTribe(e.target.value)}
+                  >
+                    <option value="">All Tribes</option>
+                    <option value="Yoruba">Yoruba</option>
+                    <option value="Dogon">Dogon</option>
+                    <option value="Senufo">Senufo</option>
+                    <option value="Bamana">Bamana</option>
+                    <option value="Fang">Fang</option>
+                    <option value="Chokwe">Chokwe</option>
+                  </select>
+                  <select
+                    className="w-full p-4 rounded-lg bg-white/80 border border-emerald-500/20 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                  >
+                    <option value="">Sort by</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                  </select>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          </section>
 
-      {filteredMasks.length === 0 && (
-        <p className="text-center mt-8">No masks found matching your criteria.</p>
-      )}
+          {/* Marketplace Grid */}
+          <section className="mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredMasks.map(mask => (
+                <div key={mask.id} className="bg-gradient-to-br from-green-500/10 to-teal-600/10 rounded-2xl overflow-hidden backdrop-blur border border-green-500/20">
+                  <img 
+                    src={mask.image} 
+                    alt={mask.name} 
+                    className="w-full h-64 object-cover"
+                  />
+                  <div className="p-6">
+                    <h2 className="text-2xl font-['Grenze_Gotisch'] text-green-500 mb-2">{mask.name}</h2>
+                    <p className="text-base-content/80 mb-2">Tribe: {mask.tribe}</p>
+                    <div className="flex items-center gap-2 mb-4">
+                      <CurrencyDollarIcon className="w-5 h-5 text-green-500" />
+                      <span className="text-lg font-semibold">{mask.price}</span>
+                    </div>
+                    <button className="w-full py-3 px-4 rounded-lg font-semibold bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white transition-all">
+                      Buy Now
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-      <div className="mt-8 text-center">
-        <button className="btn btn-secondary">List a Mask for Sale</button>
+            {filteredMasks.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-xl text-base-content/60">No masks found matching your criteria.</p>
+              </div>
+            )}
+          </section>
+
+          {/* List Mask Section */}
+          <section className="text-center">
+            <div className="bg-gradient-to-br from-teal-500/10 to-cyan-600/10 rounded-2xl p-8 backdrop-blur border border-teal-500/20 inline-block">
+              <div className="flex items-center justify-center mb-4">
+                <PlusCircleIcon className="w-12 h-12 text-teal-500" />
+              </div>
+              <button className="py-3 px-6 rounded-lg font-semibold bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white transition-all">
+                List a Mask for Sale
+              </button>
+            </div>
+          </section>
+        </main>
       </div>
     </div>
   );

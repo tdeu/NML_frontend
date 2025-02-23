@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -8,6 +7,7 @@ import { useAccount, usePublicClient } from 'wagmi';
 import { Address } from "~~/components/scaffold-eth";
 import Image from "next/image";
 
+// [Keep all your interfaces and contract definitions exactly the same]
 const contractAddress = '0xbcdd5cc1cd0fa804ae1ea14e05922a6222a5bc9f';
 
 interface MaskSubmission {
@@ -96,7 +96,6 @@ export default function ValidatorDashboard() {
         functionName: 'submissionCount',
       }) as bigint;
 
-      // Fetch submission events directly
       const events = await publicClient.getLogs({
         address: contractAddress,
         event: {
@@ -114,14 +113,12 @@ export default function ValidatorDashboard() {
 
       console.log("Events:", events);
 
-      // Create a map of ipfsHash to transaction hash
       const txHashMap = new Map(
         events.map(event => [event.args.ipfsHash, event.transactionHash])
       );
 
       console.log("Transaction hash map:", txHashMap);
 
-      // Fetch all submissions
       const submissionPromises = [];
       for (let i = 0; i < Number(count); i++) {
         submissionPromises.push(
@@ -143,7 +140,7 @@ export default function ValidatorDashboard() {
         rejectionCount: result[3],
         isAuthenticated: result[4],
         isCompleted: result[5],
-        txHash: txHashMap.get(result[1]) || '' // Use ipfsHash to get txHash
+        txHash: txHashMap.get(result[1]) || ''
       }));
 
       setSubmissions(formattedSubmissions);
@@ -177,7 +174,7 @@ export default function ValidatorDashboard() {
       });
 
       setStatus(`Validation submitted! Transaction: ${hash}`);
-      await fetchSubmissions(); // Refresh the list after validation
+      await fetchSubmissions();
     } catch (err: any) {
       console.error('Error validating submission:', err);
       setError(err.message || 'Failed to validate submission');
@@ -188,8 +185,6 @@ export default function ValidatorDashboard() {
 
   const openMaskDetails = async (submission: MaskSubmission) => {
     setSelectedMask(submission);
-    // In a real implementation, you would fetch these from IPFS using the ipfsHash
-    // For now, we'll simulate the data
     const mockDetails: MaskDetails = {
       images: [
         submission.ipfsHash + "_front",
@@ -201,7 +196,6 @@ export default function ValidatorDashboard() {
           approved: true,
           timestamp: Date.now() - 100000
         },
-        // ... other validations
       ]
     };
     setMaskDetails(mockDetails);
@@ -217,24 +211,22 @@ export default function ValidatorDashboard() {
       : 0;
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="bg-gradient-to-br from-emerald-500/10 to-green-600/10 backdrop-blur rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 border border-emerald-500/20">
           <div className="flex justify-between items-start mb-4">
-            <h2 className="text-2xl font-bold">Mask #{selectedMask.submissionId}</h2>
+            <h2 className="text-2xl font-['Grenze_Gotisch'] text-emerald-500">Mask #{selectedMask.submissionId}</h2>
             <button 
               onClick={() => setSelectedMask(null)}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-emerald-500 hover:text-emerald-600"
             >
               ✕
             </button>
           </div>
 
-          {/* Image Gallery */}
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="border rounded p-2">
-              <h3 className="font-semibold mb-2">Front View</h3>
-              <div className="aspect-square relative bg-gray-100">
-                {/* Replace with actual IPFS image */}
+            <div className="border border-emerald-500/20 rounded-lg p-2">
+              <h3 className="font-semibold mb-2 text-emerald-500">Front View</h3>
+              <div className="aspect-square relative bg-white/10">
                 <Image 
                   src="/placeholder-front.jpg" 
                   alt="Front view"
@@ -243,10 +235,9 @@ export default function ValidatorDashboard() {
                 />
               </div>
             </div>
-            <div className="border rounded p-2">
-              <h3 className="font-semibold mb-2">Back View</h3>
-              <div className="aspect-square relative bg-gray-100">
-                {/* Replace with actual IPFS image */}
+            <div className="border border-emerald-500/20 rounded-lg p-2">
+              <h3 className="font-semibold mb-2 text-emerald-500">Back View</h3>
+              <div className="aspect-square relative bg-white/10">
                 <Image 
                   src="/placeholder-back.jpg" 
                   alt="Back view"
@@ -257,27 +248,25 @@ export default function ValidatorDashboard() {
             </div>
           </div>
 
-          {/* Validation Progress */}
           <div className="mb-6">
-            <h3 className="font-semibold mb-2">Validation Progress</h3>
+            <h3 className="font-semibold mb-2 text-emerald-500">Validation Progress</h3>
             <div className="flex justify-between mb-1">
               <span>Progress: {totalVotes}/10 votes</span>
               <span>{Math.round(approvalPercentage)}% Approved</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+            <div className="w-full bg-white/20 rounded-full h-2.5 mb-4">
               <div 
-                className="h-2.5 rounded-full bg-blue-600"
+                className="h-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-green-600"
                 style={{width: `${Math.min(totalVotes * 10, 100)}%`}}
               />
             </div>
             {votesNeeded > 0 && (
-              <p className="text-gray-600">
+              <p className="text-base-content/60">
                 {votesNeeded} more {votesNeeded === 1 ? 'vote' : 'votes'} needed for final decision
               </p>
             )}
           </div>
 
-          {/* Validation Actions */}
           {!selectedMask.isCompleted && (
             <div className="flex gap-4 mb-6">
               <button
@@ -297,19 +286,18 @@ export default function ValidatorDashboard() {
             </div>
           )}
 
-          {/* Previous Validations */}
           <div>
-            <h3 className="font-semibold mb-2">Validation History</h3>
+            <h3 className="font-semibold mb-2 text-emerald-500">Validation History</h3>
             <div className="space-y-2">
               {maskDetails.validations.map((validation, index) => (
-                <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                <div key={index} className="flex justify-between items-center p-2 bg-white/10 rounded-lg">
                   <div className="flex items-center gap-2">
                     <Address address={validation.validator} />
-                    <span className={validation.approved ? 'text-green-600' : 'text-red-600'}>
+                    <span className={validation.approved ? 'text-green-500' : 'text-red-500'}>
                       {validation.approved ? '✓ Validated' : '✗ Rejected'}
                     </span>
                   </div>
-                  <span className="text-gray-500 text-sm">
+                  <span className="text-base-content/60">
                     {new Date(validation.timestamp).toLocaleString()}
                   </span>
                 </div>
@@ -321,130 +309,135 @@ export default function ValidatorDashboard() {
     );
   };
 
-  if (loading) return <div className="text-center p-8">Loading submissions...</div>;
+  if (loading) return <div className="text-center p-8 text-emerald-500">Loading submissions...</div>;
   if (error) return <div className="text-center text-red-500 p-8">{error}</div>;
 
   return (
-    <div className="container mx-auto p-4">
-      <header className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Validator Dashboard</h1>
-        <div className="flex items-center space-x-2">
-          Connected: <Address address={connectedAddress || ''} />
-        </div>
-      </header>
+    <div className="relative min-h-screen">
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-green-600/10"></div>
+      <div className="relative container mx-auto p-4">
 
-      <div className="overflow-x-auto">
-        <table className="table w-full">
-          <thead>
-            <tr>
-              <th>Mask ID</th>
-              <th>Submitter</th>
-              <th>Transaction</th>
-              <th>Validation Progress</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {submissions.map((submission) => {
-              const totalVotes = submission.approvalCount + submission.rejectionCount;
-              const approvalPercentage = totalVotes > 0 
-                ? (submission.approvalCount / totalVotes) * 100 
-                : 0;
-              const isValidated = totalVotes >= 10;
-              const isAuthenticated = isValidated && approvalPercentage >= 80;
 
-              return (
-                <tr key={submission.submissionId} className="hover">
-                  <td>
-                    <button 
-                      onClick={() => openMaskDetails(submission)}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      Mask #{submission.submissionId}
-                    </button>
-                  </td>
-                  <td>
-                    <Address address={submission.submitter} />
-                  </td>
-                  <td>
-                    <div className="flex flex-col">
+        <div className="bg-white/20 backdrop-blur rounded-lg border border-emerald-500/20 p-6">
+          <table className="w-full">
+            <thead>
+              <tr>
+                <th className="text-left p-2 text-emerald-500">Mask ID</th>
+                <th className="text-left p-2 text-emerald-500">Submitter</th>
+                <th className="text-left p-2 text-emerald-500">Transaction</th>
+                <th className="text-left p-2 text-emerald-500">Validation Progress</th>
+                <th className="text-left p-2 text-emerald-500">Status</th>
+                <th className="text-left p-2 text-emerald-500">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {submissions.map((submission) => {
+                const totalVotes = submission.approvalCount + submission.rejectionCount;
+                const approvalPercentage = totalVotes > 0 
+                  ? (submission.approvalCount / totalVotes) * 100 
+                  : 0;
+                const isValidated = totalVotes >= 10;
+                const isAuthenticated = isValidated && approvalPercentage >= 80;
+
+                return (
+                  <tr key={submission.submissionId} className="hover:bg-emerald-500/5">
+                    <td className="p-2">
+                      <button 
+                        onClick={() => openMaskDetails(submission)}
+                        className="text-emerald-500 hover:text-emerald-600"
+                      >
+                        Mask #{submission.submissionId}
+                      </button>
+                    </td>
+                    <td className="p-2">
+                      <Address address={submission.submitter} />
+                    </td>
+                    <td className="p-2">
+                      <div className="flex flex-col">
                       <span className="text-sm">Ref: {submission.ipfsHash}</span>
-                      {submission.txHash ? (
-                        <a 
-                          href={`https://sepolia.etherscan.io/tx/${submission.txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 text-sm underline"
-                        >
-                          View Transaction
-                        </a>
-                      ) : (
-                        <span className="text-gray-500 text-sm">Transaction not found</span>
+                        {submission.txHash ? (
+                          <a 
+                            href={`https://sepolia.etherscan.io/tx/${submission.txHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-emerald-500 hover:text-emerald-600 text-sm"
+                          >
+                            View Transaction
+                          </a>
+                        ) : (
+                          <span className="text-base-content/60 text-sm">Transaction not found</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-2">
+                      <div className="flex flex-col">
+                        <div className="flex justify-between mb-1">
+                          <span>Progress: {totalVotes}/10 votes</span>
+                          <span>{Math.round(approvalPercentage)}% Approved</span>
+                        </div>
+                        <div className="w-full bg-white/20 rounded-full h-2.5">
+                          <div 
+                            className={`h-2.5 rounded-full ${
+                              isValidated 
+                                ? approvalPercentage >= 80 
+                                  ? 'bg-gradient-to-r from-emerald-500 to-green-600' 
+                                  : 'bg-gradient-to-r from-red-500 to-red-600'
+                                : 'bg-gradient-to-r from-emerald-500 to-green-600'
+                            }`}
+                            style={{width: `${Math.min(totalVotes * 10, 100)}%`}}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-2">
+                      <span className={isValidated 
+                        ? isAuthenticated 
+                          ? 'text-emerald-500' 
+                          : 'text-red-500'
+                        : 'text-base-content/60'
+                      }>
+                        {isValidated 
+                          ? (isAuthenticated ? 'Authenticated' : 'Rejected')
+                          : `${10 - totalVotes} more votes needed`
+                        }
+                      </span>
+                    </td>
+                    <td className="p-2">
+                      {!submission.isCompleted && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleValidation(submission.submissionId, true)}
+                            disabled={validating}
+                            className="px-4 py-2 rounded-lg font-semibold bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white text-sm transition-all disabled:opacity-50"
+                          >
+                            Validate
+                          </button>
+                          <button
+                            onClick={() => handleValidation(submission.submissionId, false)}
+                            disabled={validating}
+                            className="px-4 py-2 rounded-lg font-semibold bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-sm transition-all disabled:opacity-50"
+                          >
+                            Reject
+                          </button>
+                        </div>
                       )}
-                    </div>
-                  </td>
-                  <td>
-                    <div className="flex flex-col">
-                      <div className="flex justify-between mb-1">
-                        <span>Progress: {totalVotes}/10 votes</span>
-                        <span>{Math.round(approvalPercentage)}% Approved</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div 
-                          className={`h-2.5 rounded-full ${
-                            isValidated 
-                              ? approvalPercentage >= 80 
-                                ? 'bg-green-600' 
-                                : 'bg-red-600'
-                              : 'bg-blue-600'
-                          }`}
-                          style={{width: `${Math.min(totalVotes * 10, 100)}%`}}
-                        />
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    {isValidated 
-                      ? (isAuthenticated ? 'Authenticated' : 'Rejected')
-                      : `${10 - totalVotes} more votes needed`
-                    }
-                  </td>
-                  <td>
-                    {!submission.isCompleted && (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleValidation(submission.submissionId, true)}
-                          disabled={validating}
-                          className="btn btn-sm btn-success"
-                        >
-                          Validate
-                        </button>
-                        <button
-                          onClick={() => handleValidation(submission.submissionId, false)}
-                          disabled={validating}
-                          className="btn btn-sm btn-error"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      {submissions.length === 0 && (
-        <p className="text-center mt-8">No masks currently awaiting validation.</p>
-      )}
-      {error && (
-        <div className="alert alert-error mt-4">
-          <p>{error}</p>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {submissions.length === 0 && (
+            <p className="text-center mt-8 text-base-content/60">No masks currently awaiting validation.</p>
+          )}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mt-4 text-red-500">
+              <p>{error}</p>
+            </div>
+          )}
         </div>
-      )}
-      {selectedMask && <MaskDetailsModal />}
+        {selectedMask && <MaskDetailsModal />}
+      </div>
     </div>
   );
 }

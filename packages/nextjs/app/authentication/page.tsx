@@ -1,9 +1,10 @@
-/* eslint-disable prettier/prettier */
 "use client";
 
 import React, { useState } from 'react';
 import { createPublicClient, http, createWalletClient, custom } from 'viem';
 import { sepolia } from 'viem/chains';
+import { useAccount } from 'wagmi';
+import { ShieldCheckIcon, UserGroupIcon, ArrowUpTrayIcon } from "@heroicons/react/24/outline";
 
 const contractAddress = '0xbcdd5cc1cd0fa804ae1ea14e05922a6222a5bc9f';
 
@@ -26,17 +27,13 @@ interface AIPrediction {
 }
 
 const generateRandomPercentage = () => Math.floor(Math.random() * 101);
-
-const generateRandomOption = (options: string[]) => {
-  return options[Math.floor(Math.random() * options.length)];
-};
-
 const generateRandomTribalGroup = () => {
   const groups = ['Yoruba', 'Dogon', 'Dan', 'Senufo', 'Bamana', 'Baule'];
   return groups[Math.floor(Math.random() * groups.length)];
 };
 
 export default function MaskSubmissionPage() {
+  const { address: connectedAddress } = useAccount();
   const [status, setStatus] = useState('');
   const [ipfsHash, setIpfsHash] = useState('');
   const [maskImage, setMaskImage] = useState<string | null>(null);
@@ -61,10 +58,7 @@ export default function MaskSubmissionPage() {
     setStatus('AI is analyzing your mask...');
     
     try {
-      // Simulate loading time
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Generate mock predictions
       const mockPredictions = [
         {
           tribalGroup: generateRandomTribalGroup(),
@@ -92,95 +86,161 @@ export default function MaskSubmissionPage() {
       return;
     }
 
+    if (!window.ethereum || !connectedAddress) {
+      setStatus('Please connect your wallet!');
+      return;
+    }
+
     setStatus('Submitting to blockchain...');
-    // Add your blockchain submission logic here
+    
+    try {
+      // First request account access
+      await window.ethereum.request({ 
+        method: 'eth_requestAccounts',
+      });
+
+      const walletClient = createWalletClient({
+        chain: sepolia,
+        transport: custom(window.ethereum)
+      });
+
+      const hash = await walletClient.writeContract({
+        address: contractAddress,
+        abi: AUTHENTIFICATION_ABI,
+        functionName: 'submitMask',
+        args: [ipfsHash],
+        account: connectedAddress,
+      });
+
+      setStatus(`Success! Transaction: ${hash}`);
+      
+      // Clear the form
+      setIpfsHash('');
+      setMaskImage(null);
+      setAiPrediction(null);
+      
+    } catch (err: any) {
+      console.error('Error submitting to blockchain:', err);
+      setStatus(err.message || 'Failed to submit to blockchain');
+    }
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm">
-        <h1 className="text-4xl font-bold mb-8 text-center">Mask Authentication</h1>
-        
-        <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Upload Mask Image
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            />
-          </div>
+    <div className="flex flex-col min-h-screen">
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-green-600/10"></div>
+        <main className="relative flex-grow container mx-auto px-4 py-8">
+          {/* Hero Section */}
+          <section className="text-center mb-12 pt-8">
+            <h1 className="text-5xl font-['Grenze_Gotisch'] mb-6 bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent">
+              Mask Authentication
+            </h1>
+            <p className="text-xl mb-8 text-base-content/80">
+              Verify your mask's authenticity using our AI-powered analysis system
+            </p>
+          </section>
 
-          {maskImage && (
-            <div className="mb-4">
-              <img 
-                src={maskImage} 
-                alt="Uploaded mask" 
-                className="max-w-md mx-auto rounded shadow-lg" 
-              />
+          {/* Upload Section */}
+          <section className="max-w-4xl mx-auto mb-12">
+            <div className="bg-gradient-to-br from-emerald-500/10 to-green-600/10 rounded-2xl p-8 backdrop-blur border border-emerald-500/20">
+              <div className="mb-8">
+                <label className="block text-center mb-4 cursor-pointer">
+                  <div className="p-8 border-2 border-dashed border-emerald-500/20 rounded-lg bg-white/10 hover:bg-white/20 transition-all">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    <div className="text-base-content/60">Click Here to Add Mask</div>
+                  </div>
+                </label>
+              </div>
+
+              {maskImage && (
+                <div className="mb-6">
+                  <img 
+                    src={maskImage} 
+                    alt="Uploaded mask" 
+                    className="max-w-md mx-auto rounded-lg shadow-lg" 
+                  />
+                </div>
+              )}
+
+              <button 
+                onClick={handleAnalysis} 
+                disabled={!maskImage}
+                className={`w-full py-3 px-4 rounded-lg font-semibold transition-all ${
+                  !maskImage 
+                    ? 'bg-gray-300 cursor-not-allowed' 
+                    : 'bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white'
+                }`}
+              >
+                {!maskImage ? 'Please Upload an Image' : 'Analyze Mask'}
+              </button>
             </div>
+          </section>
+
+          {/* Analysis Results */}
+          {aiPrediction && (
+            <section className="max-w-4xl mx-auto mb-12">
+              <div className="bg-gradient-to-br from-green-500/10 to-teal-600/10 rounded-2xl p-8 backdrop-blur border border-green-500/20">
+                <div className="flex items-center justify-center mb-6">
+                  <ShieldCheckIcon className="w-12 h-12 text-green-500" />
+                </div>
+                <h2 className="text-3xl font-['Grenze_Gotisch'] mb-6 text-center text-green-500">AI Analysis Results</h2>
+                
+                <div className="space-y-6">
+                  {aiPrediction.predictions.map((pred, index) => (
+                    <div key={index} className="mb-6">
+                      <div className="flex justify-between mb-2">
+                        <span className="text-lg font-medium">
+                          {pred.region} - {pred.tribalGroup}
+                        </span>
+                        <span className="text-lg font-bold text-green-500">
+                          {(pred.probability * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200/30 rounded-full h-3">
+                        <div 
+                          className="h-3 rounded-full bg-gradient-to-r from-emerald-500 to-green-600"
+                          style={{width: `${pred.probability * 100}%`}}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
           )}
 
-          <button 
-            onClick={handleAnalysis} 
-            disabled={!maskImage}
-            className={`w-full font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${
-              !maskImage ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-700 text-white'
-            }`}
-          >
-            {!maskImage ? 'Please Upload an Image' : 'Analyze Mask'}
-          </button>
-        </div>
-
-        {aiPrediction && (
-          <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-            <h2 className="text-2xl font-bold mb-4">AI Analysis Results</h2>
-            
-            <div className="space-y-6">
-              {aiPrediction.predictions.map((pred, index) => (
-                <div key={index} className="mb-4">
-                  <div className="flex justify-between mb-1">
-                    <span className="font-medium">
-                      {`${index + 1}. ${pred.region}/${pred.tribalGroup}`}
-                    </span>
-                    <span>{(pred.probability * 100).toFixed(1)}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div 
-                      className={`h-2.5 rounded-full ${
-                        index === 0 ? 'bg-green-600' : 
-                        index === 1 ? 'bg-blue-600' : 'bg-yellow-600'
-                      }`}
-                      style={{width: `${pred.probability * 100}%`}}
-                    />
-                  </div>
-                </div>
-              ))}
+          {/* Blockchain Submission */}
+          <section className="max-w-4xl mx-auto">
+            <div className="bg-gradient-to-br from-teal-500/10 to-cyan-600/10 rounded-2xl p-8 backdrop-blur border border-teal-500/20">
+              <div className="flex items-center justify-center mb-6">
+                <UserGroupIcon className="w-12 h-12 text-teal-500" />
+              </div>
+              <h2 className="text-3xl font-['Grenze_Gotisch'] mb-6 text-center text-teal-500">Submit to Blockchain</h2>
+              <input
+                type="text"
+                value={ipfsHash}
+                onChange={(e) => setIpfsHash(e.target.value)}
+                placeholder="Name your Mask"
+                className="w-full mb-4 p-3 rounded-lg bg-white/80 border border-teal-500/20 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              />
+              <button 
+                onClick={handleSubmitMask}
+                className="w-full py-3 px-4 rounded-lg font-semibold bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white transition-all"
+              >
+                Submit Mask
+              </button>
+              {status && (
+                <p className="mt-4 text-center text-lg font-medium text-teal-500">{status}</p>
+              )}
             </div>
-          </div>
-        )}
-
-        <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-          <h2 className="text-2xl font-bold mb-4">Submit to Blockchain</h2>
-          <input
-            type="text"
-            value={ipfsHash}
-            onChange={(e) => setIpfsHash(e.target.value)}
-            placeholder="Name your Mask"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-4"
-          />
-          <button 
-            onClick={handleSubmitMask}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
-          >
-            Submit Mask
-          </button>
-          {status && <p className="mt-4">{status}</p>}
-        </div>
+          </section>
+        </main>
       </div>
-    </main>
+    </div>
   );
 }
